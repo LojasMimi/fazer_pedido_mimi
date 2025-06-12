@@ -150,7 +150,3 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
-
-acima esta meu codigo python q esta hospedado no streamlit cloud, ao importar o arquivo excel, aparece a seguinte mensagem 
-
-Erro ao processar o arquivo: Missing optional dependency 'xlrd'. Install xlrd ≥ 2.0.1 for xls Excel support Use pip or conda to install xlrd.
