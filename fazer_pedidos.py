@@ -18,18 +18,13 @@ uploaded_file = st.file_uploader("Importe a planilha Excel", type=["xlsx", "xls"
 
 if uploaded_file is not None:
     try:
-        # Detecta engine com base na extensão
-        if uploaded_file.name.endswith(".xls"):
-            engine = "xlrd"
-        else:
-            engine = "openpyxl"
-
         # Lê todas as abas com cabeçalho na linha 14 (index 13)
-        xls = pd.read_excel(uploaded_file, sheet_name=None, header=13, engine=engine)
+        xls = pd.read_excel(uploaded_file, sheet_name=None, header=13)
 
         fornecedores_set = set()
         abas_validas = {}
 
+        # Coleta os fornecedores únicos e armazena abas com coluna "Fornecedor"
         for nome_aba, df in xls.items():
             if "Fornecedor" in df.columns:
                 abas_validas[nome_aba] = df
@@ -39,6 +34,7 @@ if uploaded_file is not None:
             fornecedores = sorted(list(fornecedores_set))
             fornecedor_selecionado = st.selectbox("Selecione um fornecedor:", fornecedores)
 
+            # Combina dados de todas as abas filtrando pelo fornecedor selecionado
             resultados = []
             for nome_aba, df in abas_validas.items():
                 linhas_filtradas = df[df["Fornecedor"] == fornecedor_selecionado]
@@ -51,7 +47,12 @@ if uploaded_file is not None:
                 st.session_state.resultado_final = resultado_final.copy()
 
                 colunas_desejadas = [
-                    "Fornecedor", "COD SISTEMA", "CODIGO BARRA", "CODIGO", "DESCRIÇÃO", "QT PD"
+                    "Fornecedor",
+                    "COD SISTEMA",
+                    "CODIGO BARRA",
+                    "CODIGO",
+                    "DESCRIÇÃO",
+                    "QT PD"
                 ]
 
                 colunas_presentes = [col for col in colunas_desejadas if col in resultado_final.columns]
@@ -78,6 +79,7 @@ if uploaded_file is not None:
                             cod = dados_produto.iloc[0]["CODIGO"]
                             desc = dados_produto.iloc[0]["DESCRIÇÃO"]
 
+                            # Verifica se já foi adicionado antes, substitui se sim
                             ja_adicionado = False
                             for p in st.session_state.produtos_solicitados:
                                 if p["CODIGO"] == cod:
@@ -101,15 +103,20 @@ if uploaded_file is not None:
                     df_solicitados = pd.DataFrame(st.session_state.produtos_solicitados)
                     st.dataframe(df_solicitados)
 
+                    # Botão para exportar apenas os produtos adicionados
                     if st.button("Exportar Arquivo"):
+
+                        # Cria DataFrame apenas com produtos solicitados
                         df_exportacao = pd.DataFrame(st.session_state.produtos_solicitados)
 
+                        # Salva em memória
                         output = io.BytesIO()
                         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
                             df_exportacao.to_excel(writer, index=False, sheet_name='Pedidos Solicitados')
 
                         output.seek(0)
 
+                        # Download
                         st.download_button(
                             label="📥 Baixar Arquivo Atualizado",
                             data=output,
@@ -117,6 +124,7 @@ if uploaded_file is not None:
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
 
+                        # ✅ INSTRUÇÕES CLARAS DO QUE FAZER DEPOIS
                         st.markdown("---")
                         st.subheader("📌 O que fazer depois de exportar o arquivo:")
                         st.markdown("""
@@ -134,6 +142,7 @@ if uploaded_file is not None:
 
 **Pronto! Agora seu pedido está vinculado com os dados exportados.**
                         """)
+
             else:
                 st.info("Nenhuma linha encontrada para o fornecedor selecionado.")
         else:
@@ -141,3 +150,7 @@ if uploaded_file is not None:
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
+
+acima esta meu codigo python q esta hospedado no streamlit cloud, ao importar o arquivo excel, aparece a seguinte mensagem 
+
+Erro ao processar o arquivo: Missing optional dependency 'xlrd'. Install xlrd ≥ 2.0.1 for xls Excel support Use pip or conda to install xlrd.
