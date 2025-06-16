@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import io
@@ -112,3 +111,5 @@ if uploaded_file is not None:
                             file_name="pedidos_solicitados.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
+    except Exception as e:
+        st.error(f"Erro ao processar o arquivo: {e}")
