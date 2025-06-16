@@ -1,6 +1,4 @@
-Claro! Aqui está o **código completo e ajustado**, compatível com arquivos `.xlsx` e `.xls`, funcionando corretamente no **Streamlit Cloud**:
 
-````python
 import streamlit as st
 import pandas as pd
 import io
@@ -138,15 +136,4 @@ if uploaded_file is not None:
    except Exception as e:
    st.error(f"Erro ao processar o arquivo: {e}")
 
-```
 
----
-
-### ✅ Observações:
-
-- Compatível com `.xlsx` e `.xls`.
-- Não força `engine='openpyxl'`.
-- Use `xlrd==1.2.0` no ambiente para garantir suporte a `.xls`.
-
-Se precisar, posso gerar o `requirements.txt` também. Deseja?
-```
