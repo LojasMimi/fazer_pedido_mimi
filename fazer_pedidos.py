@@ -129,9 +129,9 @@ if uploaded_file is not None:
 6. Confirme se a descrição e quantidade estão corretas.
    """)
    else:
-   st.info("Nenhuma linha encontrada para o fornecedor selecionado.")
+   	st.info("Nenhuma linha encontrada para o fornecedor selecionado.")
    else:
-   st.warning("Nenhum fornecedor encontrado nas abas do Excel.")
+   	st.warning("Nenhum fornecedor encontrado nas abas do Excel.")
 
    except Exception as e:
    st.error(f"Erro ao processar o arquivo: {e}")
