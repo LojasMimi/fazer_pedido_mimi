@@ -19,7 +19,9 @@ uploaded_file = st.file_uploader("Importe a planilha Excel", type=["xlsx", "xls"
 if uploaded_file is not None:
     try:
         # Lê todas as abas com cabeçalho na linha 14 (index 13)
-        xls = pd.read_excel(uploaded_file, sheet_name=None, header=13)
+        # Adicione engine='openpyxl' explicitamente
+        xls = pd.read_excel(uploaded_file, sheet_name=None, header=13, engine="openpyxl")
+
 
         fornecedores_set = set()
         abas_validas = {}
