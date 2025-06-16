@@ -112,28 +112,3 @@ if uploaded_file is not None:
                             file_name="pedidos_solicitados.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
-
-                        st.markdown("---")
-                        st.subheader("📌 O que fazer depois de exportar o arquivo:")
-                        st.markdown("""
-1. Vá até a **pasta PABLO** que está dentro da **pasta USUARIO** no servidor **publica**.
-2. Abra a **planilha de pedidos** (CADIMPORT, CADPLA ou CADPRO).
-3. Localize a linha do produto desejado.
-4. Cole esta fórmula na célula correspondente:
-
-```excel
-=SEERRO(PROCV(G123;'[pedidos_solicitados.xlsx]Pedidos Solicitados'!$A$2:$D$300;3;FALSO);"")
-````
-
-5. Substitua `G123` pela célula onde está o código do produto.
-6. Confirme se a descrição e quantidade estão corretas.
-   """)
-   else:
-   	st.info("Nenhuma linha encontrada para o fornecedor selecionado.")
-   else:
-   	st.warning("Nenhum fornecedor encontrado nas abas do Excel.")
-
-   except Exception as e:
-   st.error(f"Erro ao processar o arquivo: {e}")
-
-
