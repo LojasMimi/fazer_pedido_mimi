@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import os
+import openpyxl
 
 st.set_page_config(page_title="Novo Processo de Pedidos - TESTE", layout="wide")
 
@@ -114,7 +115,7 @@ try:
                         cod_barras = row.get("CODIGO BARRA", "")
                         codigo = row.get("CODIGO", "")
                         descricao = row.get("DESCRICAO", "")
-                        qtd_raw = row.get("QTD", "").strip()
+                        qtd_raw = str(row.get("QTD", "")).strip()
 
                         if not qtd_raw.isdigit():
                             erros_qtd.append(f"Linha {idx + 2}: QTD inválida '{qtd_raw}' para produto '{descricao}'")
