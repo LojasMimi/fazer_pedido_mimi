@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 import io
-import os
 import openpyxl
 
 st.set_page_config(page_title="Novo Processo de Pedidos - TESTE", layout="wide")
+
+# URL do CSV no GitHub
+CSV_URL = "https://raw.githubusercontent.com/LojasMimi/fazer_pedido_mimi/refs/heads/main/cad_concatenado.csv"
 
 # Título
 st.markdown("<h1 style='text-align: center; color: #1E90FF;'>🛍️ Novo Processo de Pedidos - TESTE</h1>", unsafe_allow_html=True)
@@ -14,9 +16,9 @@ st.markdown("---")
 if "produtos_solicitados" not in st.session_state:
     st.session_state.produtos_solicitados = []
 
-# Carregamento do CSV principal
+# Carregamento do CSV principal via URL
 try:
-    df = pd.read_csv("cad_concatenado.csv", dtype=str).fillna("")
+    df = pd.read_csv(CSV_URL, dtype=str).fillna("")
 
     # Abas para navegação
     aba_individual, aba_lote, aba_revisao = st.tabs(["🧍 Pedido Individual", "📂 Pedido em Lote", "📋 Revisar Pedidos"])
@@ -105,7 +107,7 @@ try:
         if arquivo:
             with st.spinner("⏳ Processando arquivo..."):
                 try:
-                    nome_arquivo = os.path.basename(arquivo.name)
+                    nome_arquivo = arquivo.name
                     df_lote = pd.read_excel(arquivo, dtype=str).fillna("")
 
                     registros_adicionados = 0
