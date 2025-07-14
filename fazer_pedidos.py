@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import io
-import openpyxl
+from openpyxl import load_workbook
+from io import BytesIO
 
 st.set_page_config(page_title="Novo Processo de Pedidos - TESTE", layout="wide")
 
@@ -12,18 +12,16 @@ CSV_URL = "https://raw.githubusercontent.com/LojasMimi/fazer_pedido_mimi/refs/he
 st.markdown("<h1 style='text-align: center; color: #1E90FF;'>🛍️ Novo Processo de Pedidos - TESTE</h1>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Sessão inicial
+# Inicializa a lista de produtos solicitados na sessão
 if "produtos_solicitados" not in st.session_state:
     st.session_state.produtos_solicitados = []
 
-# Carregamento do CSV principal via URL
 try:
+    # Carrega o CSV diretamente da URL
     df = pd.read_csv(CSV_URL, dtype=str).fillna("")
 
-    # Abas para navegação
     aba_individual, aba_lote, aba_revisao = st.tabs(["🧍 Pedido Individual", "📂 Pedido em Lote", "📋 Revisar Pedidos"])
 
-    # -----------------------------
     # Aba 1: Pedido Individual
     with aba_individual:
         with st.expander("📁 Selecione o Fornecedor e Produto", expanded=True):
@@ -80,9 +78,22 @@ try:
                 st.info("Lista de pedidos limpa com sucesso.")
 
         with col3:
-            gerar_excel_individual = st.button("📤 Gerar Excel")
+            if st.button("📤 Gerar Excel"):
+                if st.session_state.produtos_solicitados:
+                    df_exportar = pd.DataFrame(st.session_state.produtos_solicitados)
+                    output = BytesIO()
+                    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                        df_exportar.to_excel(writer, index=False, sheet_name='Pedidos Individuais')
+                    output.seek(0)
+                    st.download_button(
+                        label="📥 Baixar Excel",
+                        data=output,
+                        file_name="pedidos_individuais.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                else:
+                    st.warning("Nenhum pedido para exportar.")
 
-    # -----------------------------
     # Aba 2: Pedido em Lote
     with aba_lote:
         col1, col2 = st.columns(2)
@@ -90,8 +101,8 @@ try:
         with col1:
             if st.button("📥 Gerar Modelo Excel"):
                 modelo_vazio = pd.DataFrame(columns=["CODIGO BARRA", "CODIGO", "DESCRICAO", "QTD"])
-                output = io.BytesIO()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
                     modelo_vazio.to_excel(writer, index=False, sheet_name="Modelo")
                 output.seek(0)
                 st.download_button(
@@ -108,7 +119,11 @@ try:
             with st.spinner("⏳ Processando arquivo..."):
                 try:
                     nome_arquivo = arquivo.name
-                    df_lote = pd.read_excel(arquivo, dtype=str).fillna("")
+                    wb = load_workbook(filename=BytesIO(arquivo.read()))
+                    ws = wb.active
+                    data = ws.values
+                    cols = next(data)
+                    df_lote = pd.DataFrame(data, columns=cols).fillna("")
 
                     registros_adicionados = 0
                     erros_qtd = []
@@ -129,7 +144,6 @@ try:
                         if not produto_match.empty:
                             fornecedor = produto_match.iloc[0]["FORNECEDOR"]
 
-                            # Verifica duplicata
                             ja_adicionado = False
                             for item in st.session_state.produtos_solicitados:
                                 if item["CODIGO"] == codigo and item["CODIGO BARRA"] == cod_barras:
@@ -166,7 +180,6 @@ try:
             st.session_state.produtos_solicitados = []
             st.info("Lista de pedidos limpa com sucesso.")
 
-    # -----------------------------
     # Aba 3: Revisar Pedidos
     with aba_revisao:
         if st.session_state.produtos_solicitados:
@@ -174,7 +187,6 @@ try:
 
             df_pedidos = pd.DataFrame(st.session_state.produtos_solicitados)
 
-            # Remover coluna técnica da exibição
             colunas_visiveis = [col for col in df_pedidos.columns if col != "__ORIGEM_PLANILHA__"]
             df_visivel = df_pedidos[colunas_visiveis]
 
@@ -191,9 +203,9 @@ try:
             st.table(totais)
 
             if st.button("📤 Gerar Excel com Pedidos"):
-                output = io.BytesIO()
+                output = BytesIO()
                 df_exportar = df_visivel.copy()
-                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
                     df_exportar.to_excel(writer, index=False, sheet_name='Pedidos Solicitados')
                 output.seek(0)
                 st.download_button(
@@ -205,7 +217,6 @@ try:
         else:
             st.info("Nenhum pedido adicionado ainda.")
 
-    # -----------------------------
     # Rodapé fixo
     st.markdown("---")
     st.markdown(
